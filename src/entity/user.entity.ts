@@ -1,6 +1,16 @@
-import { Role } from './../enums/role.enum';
+import { Role } from '../enums/role.enum';
 import { IsEmail, IsNotEmpty, IsString, Min } from 'class-validator';
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  BaseEntity,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Post } from './post.entity';
+import { Profile } from './profile.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -29,4 +39,11 @@ export class User extends BaseEntity {
     default: Role.User,
   })
   role: Role;
+
+  @OneToOne(() => Profile)
+  @JoinColumn()
+  profile: Profile;
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
 }

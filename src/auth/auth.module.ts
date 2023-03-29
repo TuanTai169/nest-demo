@@ -1,4 +1,4 @@
-import { User } from './../users/user.entity';
+import { User } from '../entity/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
@@ -8,8 +8,8 @@ import { AuthController } from './auth.controller';
 import { UserModule } from './../users/user.module';
 import { AuthService } from './auth.service';
 import { jwtConstants } from './constants';
-import { LocalStrategy } from './local.strategy';
-import { JsonWebTokenStrategy } from './jwt.strategy';
+import { LocalStrategy } from '../strategy/local.strategy';
+import { JsonWebTokenStrategy } from '../strategy/jwt.strategy';
 
 @Module({
   imports: [

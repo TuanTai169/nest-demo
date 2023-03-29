@@ -2,19 +2,21 @@ import { RolesGuard } from 'src/guard/roles.guard';
 import { UserService } from './user.service';
 import {
   Controller,
-  Request,
   Delete,
   Get,
   Param,
-  Patch,
   Put,
   UseGuards,
   Body,
+  Post,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { User } from './user.entity';
+import { User } from '../entity/user.entity';
 import { AuthenticationGuard } from 'src/guard/auth.guard';
 import { Role } from 'src/enums/role.enum';
 import { Roles } from 'src/decorator/roles.decorator';
+import { CreateUserProfileDto } from './../dtos/user.dto';
+import { CreatePostDto } from './../dtos/post.dto';
 
 @Controller('/api/user')
 export class UserController {
@@ -42,5 +44,18 @@ export class UserController {
   @Delete('delete/:id')
   async remove(@Param('id') id: string): Promise<any> {
     return this.userService.delete(+id);
+  }
+
+  @Post(':id/profile')
+  createUserProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() createUserProfileDto: CreateUserProfileDto,
+  ) {
+    return this.userService.createUserProfile(id, createUserProfileDto);
+  }
+
+  @Post(':id/posts')
+  createUserPosts(@Param('id', ParseIntPipe) id: number, @Body() postDto: CreatePostDto) {
+    return this.userService.createUserPosts(id, postDto);
   }
 }

@@ -1,26 +1,36 @@
-import { User } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { validate } from 'class-validator';
+
+import { CreateUserDto, UpdateUserDto, CreateUserProfileDto } from './../dtos/user.dto';
+import { CreatePostDto } from './../dtos/post.dto';
+
+import { User } from '../entity/user.entity';
+import { Profile } from '../entity/profile.entity';
+import { Post } from 'src/entity/post.entity';
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Profile) private readonly profileRepository: Repository<Profile>,
+    @InjectRepository(Post) private readonly postRepository: Repository<Post>,
+  ) {}
 
   findAll() {
-    return this.userRepository.find();
+    return this.userRepository.find({ relations: ['profile', 'posts'] });
   }
 
   async findUserById(id: number): Promise<User | undefined> {
-    return await this.userRepository.findOneBy({ id });
+    return await this.userRepository.findOne({ where: { id }, relations: ['profile', 'posts'] });
   }
 
   async findUserByEmail(email: string): Promise<User | undefined> {
     return await this.userRepository.findOneBy({ email });
   }
 
-  async register(body: any) {
+  async register(body: CreateUserDto) {
     const { fullName, email, password, role } = body;
 
     const errors = await validate(body);
@@ -34,8 +44,8 @@ export class UserService {
       const newUser = this.userRepository.create({
         fullName,
         email,
-        role,
         password: hashPassword,
+        role,
       });
 
       this.userRepository.save(newUser);
@@ -45,7 +55,7 @@ export class UserService {
     }
   }
 
-  async update(id: number, updateUser: User): Promise<any> {
+  async update(id: number, updateUser: UpdateUserDto): Promise<any> {
     const errors = await validate(updateUser);
     if (errors.length > 0) throw new HttpException('Validation failed!', HttpStatus.BAD_REQUEST);
     else {
@@ -61,8 +71,29 @@ export class UserService {
 
   async delete(id: number): Promise<any> {
     const deletedUser = await this.userRepository.delete(id);
-    if (!deletedUser.affected) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
+    if (!deletedUser.affected) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+  }
+
+  async createUserProfile(
+    id: number,
+    createUserProfileParams: CreateUserProfileDto,
+  ): Promise<User> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user)
+      throw new HttpException('User not found.Cannot create profile', HttpStatus.BAD_REQUEST);
+
+    const newProfile = this.profileRepository.create(createUserProfileParams);
+    const saveProfile = await this.profileRepository.save(newProfile);
+    user.profile = saveProfile;
+    return this.userRepository.save(user);
+  }
+
+  async createUserPosts(id: number, postParams: CreatePostDto): Promise<Post> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user)
+      throw new HttpException('User not found.Cannot create profile', HttpStatus.BAD_REQUEST);
+
+    const newPost = this.postRepository.create({ ...postParams, user });
+    return await this.postRepository.save(newPost);
   }
 }
