@@ -1,4 +1,4 @@
-import { Role } from '../enums/role.enum';
+import { Role } from '../../enums/role.enum';
 import { IsEmail, IsNotEmpty, IsString, Min } from 'class-validator';
 import {
   Entity,
@@ -11,13 +11,14 @@ import {
 } from 'typeorm';
 import { Post } from './post.entity';
 import { Profile } from './profile.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('users')
 export class User extends BaseEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ name: 'user_id' })
   id: number;
 
-  @Column()
+  @Column({ name: 'full_name' })
   @IsString()
   @IsNotEmpty()
   fullName: string;
@@ -31,6 +32,7 @@ export class User extends BaseEntity {
   @Min(4)
   @IsString()
   @IsNotEmpty()
+  @Exclude()
   password: string;
 
   @Column({

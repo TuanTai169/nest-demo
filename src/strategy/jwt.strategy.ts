@@ -1,4 +1,4 @@
-import { User } from '../entity/user.entity';
+import { User } from '../db/entity/user.entity';
 import { jwtConstants } from '../auth/constants';
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';

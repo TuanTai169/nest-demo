@@ -7,9 +7,10 @@ import { validate } from 'class-validator';
 import { CreateUserDto, UpdateUserDto, CreateUserProfileDto } from './../dtos/user.dto';
 import { CreatePostDto } from './../dtos/post.dto';
 
-import { User } from '../entity/user.entity';
-import { Profile } from '../entity/profile.entity';
-import { Post } from 'src/entity/post.entity';
+import { User } from '../db/entity/user.entity';
+import { Profile } from '../db/entity/profile.entity';
+import { Post } from 'src/db/entity/post.entity';
+import { instanceToInstance } from 'class-transformer';
 @Injectable()
 export class UserService {
   constructor(
@@ -23,7 +24,11 @@ export class UserService {
   }
 
   async findUserById(id: number): Promise<User | undefined> {
-    return await this.userRepository.findOne({ where: { id }, relations: ['profile', 'posts'] });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['profile', 'posts'],
+    });
+    return instanceToInstance(user);
   }
 
   async findUserByEmail(email: string): Promise<User | undefined> {
@@ -36,7 +41,7 @@ export class UserService {
     const errors = await validate(body);
     if (errors.length > 0) throw new HttpException('Validation failed!', HttpStatus.BAD_REQUEST);
     else {
-      const user = await this.userRepository.findOneBy({ email });
+      const user = await this.userRepository.findOne({ where: { email } });
       if (user) throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
 
       const saltOrRounds = 10;
@@ -50,19 +55,20 @@ export class UserService {
 
       this.userRepository.save(newUser);
       return {
-        message: 'Register successfully',
+        message: 'Register successfully. Please login to continue',
       };
     }
   }
 
-  async update(id: number, updateUser: UpdateUserDto): Promise<any> {
+  async update(id: number, updateUser: UpdateUserDto): Promise<User> {
     const errors = await validate(updateUser);
     if (errors.length > 0) throw new HttpException('Validation failed!', HttpStatus.BAD_REQUEST);
     else {
       await this.userRepository.update(id, updateUser);
-      const updatedTodo = await this.userRepository.findOneBy({ id });
-      if (updatedTodo) {
-        return updatedTodo;
+      const user = await this.userRepository.findOneBy({ id });
+
+      if (user) {
+        return instanceToInstance(user);
       }
 
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);

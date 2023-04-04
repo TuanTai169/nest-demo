@@ -11,11 +11,11 @@ import {
   Post,
   ParseIntPipe,
 } from '@nestjs/common';
-import { User } from '../entity/user.entity';
+import { User } from '../db/entity/user.entity';
 import { AuthenticationGuard } from 'src/guard/auth.guard';
 import { Role } from 'src/enums/role.enum';
 import { Roles } from 'src/decorator/roles.decorator';
-import { CreateUserProfileDto } from './../dtos/user.dto';
+import { CreateUserProfileDto, UpdateUserDto } from './../dtos/user.dto';
 import { CreatePostDto } from './../dtos/post.dto';
 
 @Controller('/api/user')
@@ -37,7 +37,7 @@ export class UserController {
 
   @UseGuards(AuthenticationGuard)
   @Put('/update/:id')
-  async update(@Param() params, @Body() updateUser: User): Promise<any> {
+  async update(@Param() params, @Body() updateUser: UpdateUserDto): Promise<any> {
     return this.userService.update(params.id, updateUser);
   }
 
