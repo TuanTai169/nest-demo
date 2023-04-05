@@ -1,4 +1,4 @@
-import { RolesGuard } from 'src/guard/roles.guard';
+import { RolesGuard } from 'src/common/guard/roles.guard';
 import { UserService } from './user.service';
 import {
   Controller,
@@ -11,12 +11,12 @@ import {
   Post,
   ParseIntPipe,
 } from '@nestjs/common';
-import { User } from '../db/entity/user.entity';
-import { AuthenticationGuard } from 'src/guard/auth.guard';
+import { User } from '../../db/entity/user.entity';
+import { AuthenticationGuard } from 'src/common/guard/auth.guard';
 import { Role } from 'src/enums/role.enum';
-import { Roles } from 'src/decorator/roles.decorator';
-import { CreateUserProfileDto, UpdateUserDto } from './../dtos/user.dto';
-import { CreatePostDto } from './../dtos/post.dto';
+import { Roles } from 'src/common/decorator/roles.decorator';
+import { CreateUserProfileDto, UpdateUserDto } from '../../dtos/user.dto';
+import { CreatePostDto } from '../../dtos/post.dto';
 
 @Controller('/api/user')
 export class UserController {

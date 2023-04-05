@@ -1,4 +1,4 @@
-import { UserService } from './../users/user.service';
+import { UserService } from '../shared/users/user.service';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';

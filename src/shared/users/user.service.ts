@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { validate } from 'class-validator';
 
-import { CreateUserDto, UpdateUserDto, CreateUserProfileDto } from './../dtos/user.dto';
-import { CreatePostDto } from './../dtos/post.dto';
+import { CreateUserDto, UpdateUserDto, CreateUserProfileDto } from '../../dtos/user.dto';
+import { CreatePostDto } from '../../dtos/post.dto';
 
-import { User } from '../db/entity/user.entity';
-import { Profile } from '../db/entity/profile.entity';
+import { User } from '../../db/entity/user.entity';
+import { Profile } from '../../db/entity/profile.entity';
 import { Post } from 'src/db/entity/post.entity';
 import { instanceToInstance } from 'class-transformer';
 @Injectable()
@@ -20,7 +20,7 @@ export class UserService {
   ) {}
 
   findAll() {
-    return this.userRepository.find({ relations: ['profile', 'posts'] });
+    return this.userRepository.find({ relations: ['profile', 'posts', 'posts.genres'] });
   }
 
   async findUserById(id: number): Promise<User | undefined> {
