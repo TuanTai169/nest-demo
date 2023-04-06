@@ -48,4 +48,10 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[];
+
+  @Column({ nullable: true, name: 'refresh_token' })
+  refreshToken: string;
+
+  @Column({ type: 'date', nullable: true, name: 'refresh_token_exp' })
+  refreshTokenExp: string;
 }

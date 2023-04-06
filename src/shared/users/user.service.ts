@@ -1,16 +1,22 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { validate } from 'class-validator';
 
-import { CreateUserDto, UpdateUserDto, CreateUserProfileDto } from '../../dtos/user.dto';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  CreateUserProfileDto,
+  CurrentUserDto,
+} from '../../dtos/user.dto';
 import { CreatePostDto } from '../../dtos/post.dto';
 
 import { User } from '../../db/entity/user.entity';
 import { Profile } from '../../db/entity/profile.entity';
 import { Post } from 'src/db/entity/post.entity';
 import { instanceToInstance } from 'class-transformer';
+import * as moment from 'moment';
 @Injectable()
 export class UserService {
   constructor(
@@ -20,7 +26,10 @@ export class UserService {
   ) {}
 
   findAll() {
-    return this.userRepository.find({ relations: ['profile', 'posts', 'posts.genres'] });
+    return this.userRepository.find({
+      select: ['id', 'email', 'fullName', 'role'],
+      relations: ['profile', 'posts', 'posts.genres'],
+    });
   }
 
   async findUserById(id: number): Promise<User | undefined> {
@@ -32,7 +41,7 @@ export class UserService {
   }
 
   async findUserByEmail(email: string): Promise<User | undefined> {
-    return await this.userRepository.findOneBy({ email });
+    return await this.userRepository.findOne({ where: { email } });
   }
 
   async register(body: CreateUserDto) {
@@ -101,5 +110,16 @@ export class UserService {
 
     const newPost = this.postRepository.create({ ...postParams, user });
     return await this.postRepository.save(newPost);
+  }
+
+  async validRefreshToken(email: string, refreshToken: string): Promise<CurrentUserDto> {
+    const currentData = moment().format('YYYY-MM-DD');
+
+    const user = await this.userRepository.findOne({
+      where: { email, refreshToken, refreshTokenExp: MoreThanOrEqual(currentData) },
+    });
+    if (!user) return null;
+
+    return user;
   }
 }

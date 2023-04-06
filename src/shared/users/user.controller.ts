@@ -41,6 +41,8 @@ export class UserController {
     return this.userService.update(params.id, updateUser);
   }
 
+  @UseGuards(AuthenticationGuard, RolesGuard)
+  @Roles(Role.Admin)
   @Delete('delete/:id')
   async remove(@Param('id') id: string): Promise<any> {
     return this.userService.delete(+id);

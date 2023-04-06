@@ -1,4 +1,4 @@
 export const jwtConstants = {
   secret: 'NESTJS_DEMO_APP',
-  expiredIn: '1d',
+  expiredIn: '1h',
 };

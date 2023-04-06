@@ -1,9 +1,10 @@
 import { AuthService } from './auth.service';
-import { Controller, Post, Body, UseGuards, Request, Get } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, Res, Get } from '@nestjs/common';
+import { Response } from 'express';
+
 import { LocalAuthGuard } from 'src/common/guard/local.guard';
-import { AuthenticationGuard } from 'src/common/guard/auth.guard';
-import { User } from 'src/db/entity/user.entity';
-import { CreateUserDto } from './../dtos/user.dto';
+import { RefreshGuard } from './../common/guard/refresh.guard';
+import { CreateUserDto, CurrentUserDto } from './../dtos/user.dto';
 
 @Controller('api/auth')
 export class AuthController {
@@ -16,13 +17,39 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() request): Promise<any> {
-    return this.authSerVice.loginWithCredentials(request.user);
+  async login(@Req() req, @Res({ passthrough: true }) res: Response): Promise<any> {
+    const token = await this.authSerVice.getJwtToken(req.user as CurrentUserDto);
+    const refreshToken = await this.authSerVice.getRefreshToken(req.user.id);
+
+    const secretData = {
+      token,
+      refreshToken,
+    };
+    res.cookie('auth-cookie', secretData, { httpOnly: true });
+    return {
+      message: 'Login successfully',
+    };
   }
 
-  @UseGuards(AuthenticationGuard)
-  @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  @UseGuards(RefreshGuard)
+  @Get('refresh-token')
+  async refreshToken(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const token = await this.authSerVice.getJwtToken(req.user as CurrentUserDto);
+    const refreshToken = await this.authSerVice.getRefreshToken(req.user.id);
+    const secretData = {
+      token,
+      refreshToken,
+    };
+
+    res.cookie('auth-cookie', secretData, { httpOnly: true });
+    return {
+      message: 'Get refresh token successfully',
+    };
   }
+
+  // @UseGuards(AuthenticationGuard)
+  // @Get('profile')
+  // getProfile(@Req() req: Request) {
+  //   return req.user;
+  // }
 }
