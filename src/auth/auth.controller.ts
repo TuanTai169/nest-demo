@@ -5,10 +5,15 @@ import { Response } from 'express';
 import { LocalAuthGuard } from 'src/common/guard/local.guard';
 import { RefreshGuard } from './../common/guard/refresh.guard';
 import { CreateUserDto, CurrentUserDto } from './../dtos/user.dto';
+import { AuthenticationGuard } from 'src/common/guard/auth.guard';
+import { UserService } from 'src/shared/users/user.service';
 
 @Controller('api/auth')
 export class AuthController {
-  constructor(private readonly authSerVice: AuthService) {}
+  constructor(
+    private readonly authSerVice: AuthService,
+    private readonly userSerVice: UserService,
+  ) {}
 
   @Post('register')
   register(@Body() body: CreateUserDto) {
@@ -28,6 +33,8 @@ export class AuthController {
     res.cookie('auth-cookie', secretData, { httpOnly: true });
     return {
       message: 'Login successfully',
+      user: req.user,
+      token,
     };
   }
 
@@ -40,16 +47,15 @@ export class AuthController {
       token,
       refreshToken,
     };
-
     res.cookie('auth-cookie', secretData, { httpOnly: true });
     return {
       message: 'Get refresh token successfully',
     };
   }
 
-  // @UseGuards(AuthenticationGuard)
-  // @Get('profile')
-  // getProfile(@Req() req: Request) {
-  //   return req.user;
-  // }
+  @UseGuards(AuthenticationGuard)
+  @Get('profile')
+  async getProfile(@Req() req) {
+    return await this.userSerVice.findUserById(req.userId);
+  }
 }

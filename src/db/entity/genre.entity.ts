@@ -12,6 +12,10 @@ export class Genre extends BaseEntity {
   @IsNotEmpty()
   name: string;
 
+  // @IsString()
+  // @IsNotEmpty()
+  // desc: string;
+
   @ManyToMany(() => Post, (post) => post.genres, { eager: false })
   @JoinTable({
     name: 'post_genre',
